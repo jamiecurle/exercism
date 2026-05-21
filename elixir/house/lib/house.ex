@@ -4,18 +4,18 @@ defmodule House do
   """
 
   @lyrics [
-    {"the house that Jack built", ""},
-    {"the malt", "lay in"},
-    {"the rat", "ate the"},
-    {"the cat", "killed the"},
-    {"the dog", "worried the"},
-    {"the cow with the crumpled horn", "tossed the"},
-    {"the maiden all forlorn", "milked the"},
-    {"the man all tattered and torn", "kissed the"},
-    {"the priest all shaven and shorn", "married the"},
-    {"the rooster that crowed in the morn", "woke the"},
-    {"the farmer sowing his corn", "kept the"},
-    {"the horse and the hound and the horn", "belonged to"}
+    {"house", "Jack built"},
+    {"malt", "lay in"},
+    {"rat", "ate"},
+    {"cat", "killed"},
+    {"dog", "worried"},
+    {"cow with the crumpled horn", "tossed"},
+    {"maiden all forlorn", "milked"},
+    {"man all tattered and torn", "kissed"},
+    {"priest all shaven and shorn", "married"},
+    {"rooster that crowed in the morn", "woke"},
+    {"farmer sowing his corn", "kept"},
+    {"horse and the hound and the horn", "belonged to"}
   ]
 
   def recite(start, stop) do
@@ -25,19 +25,25 @@ defmodule House do
   end
 
   defp build_verse(n) do
-    subjects = Enum.take(@lyrics, n) |> Enum.reverse()
+    # get the lyrics we need
+    lyrics =
+      @lyrics
+      |> Enum.take(n)
+      |> Enum.reverse()
 
-    [{head_noun, _} | rest] = subjects
+    # get the last line off the lyrics (not first - reversed)
+    [{noun, verb} | rest] = lyrics
 
-    first_line = "This is #{head_noun}"
-
-    connector_lines =
+    # process the lyrics
+    verse =
       rest
-      |> Enum.map(fn
-        {noun, ""} -> "that lay in #{noun}"
-        {noun, verb} -> "that #{verb} #{noun}"
+      |> Enum.map(fn {noun, verb} ->
+        "the #{noun} that #{verb}"
       end)
 
-    [first_line | connector_lines] |> Enum.join("\n")
+    # build it all up
+    ["This is the #{noun} that #{verb}" | verse]
+    |> Enum.join(" ")
+    |> then(fn phrase -> phrase <> "." end)
   end
 end
