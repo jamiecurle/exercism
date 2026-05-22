@@ -1,0 +1,65 @@
+name: Auto-merge Exercism syncer PRs
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    name: Merge trusted syncer PR
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.pull_request.user.login == 'exercism-solutions-syncer[bot]' &&
+      github.event.pull_request.draft == false
+    steps:
+      - name: Merge PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            core.info(`Auto-merge requested for #${pr.number} from ${pr.user.login}`);
+
+            // Do not check out or execute PR code in pull_request_target.
+            // This workflow only uses the GitHub API after verifying the PR author.
+            if (pr.user.login !== 'exercism-solutions-syncer[bot]') {
+              core.setFailed(`Refusing to merge PR from ${pr.user.login}`);
+              return;
+            }
+
+            let pull;
+            for (let attempt = 1; attempt <= 12; attempt++) {
+              const { data } = await github.rest.pulls.get({ owner, repo, pull_number: pr.number });
+              pull = data;
+              core.info(`Attempt ${attempt}: mergeable=${pull.mergeable}, mergeable_state=${pull.mergeable_state}`);
+
+              if (pull.mergeable === true) break;
+              if (pull.mergeable === false) {
+                core.setFailed(`PR #${pr.number} is not mergeable: ${pull.mergeable_state}`);
+                return;
+              }
+
+              await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+
+            if (!pull || pull.mergeable !== true) {
+              core.setFailed(`Timed out waiting for GitHub to compute mergeability for PR #${pr.number}`);
+              return;
+            }
+
+            await github.rest.pulls.merge({
+              owner,
+              repo,
+              pull_number: pr.number,
+              merge_method: 'squash',
+              commit_title: `${pull.title} (#${pr.number})`,
+              commit_message: 'Automatically merged trusted Exercism syncer PR.'
+            });
+
+            core.info(`Merged PR #${pr.number}`);
