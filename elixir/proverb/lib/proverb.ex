@@ -18,4 +18,14 @@ defmodule Proverb do
     [want | lost] = Enum.take(prose, 2)
     do_recite(tail, final, verse <> "For want of a #{want} the #{lost} was lost.\n")
   end
+
+  # A community solution
+  # Much nicer.
+
+  # def recite(strings) do
+  #   strings
+  #   |> Enum.chunk_every(2, 1, :discard)
+  #   |> Enum.map_join("", fn [s1, s2] -> "For want of a #{s1} the #{s2} was lost.\n" end)
+  #   |> Kernel.<>("And all for the want of a #{List.first(strings)}.\n")
+  # end
 end
