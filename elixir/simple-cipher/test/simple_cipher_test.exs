@@ -58,26 +58,22 @@ defmodule SimpleCipherTest do
     assert SimpleCipher.encode("zzzzzzzzzz", "abcdefghij") == "zabcdefghi"
   end
 
-  @tag :pending
   test "can wrap on decode" do
     assert SimpleCipher.decode("zabcdefghi", "abcdefghij") == "zzzzzzzzzz"
   end
 
-  @tag :pending
   test "can encode messages longer than the key" do
     assert SimpleCipher.encode("abc", "a") == "abc"
     assert SimpleCipher.encode("abcdefghi", "abc") == "acedfhgik"
     assert SimpleCipher.encode("iamapandabear", "abc") == "iboaqcnecbfcr"
   end
 
-  @tag :pending
   test "can decode messages longer than the key" do
     assert SimpleCipher.decode("abc", "a") == "abc"
     assert SimpleCipher.decode("acedfhgik", "abc") == "abcdefghi"
     assert SimpleCipher.decode("iboaqcnecbfcr", "abc") == "iamapandabear"
   end
 
-  @tag :pending
   test "if key is longer than text, only use as much as needed" do
     key = "somewhatlongkey"
 
@@ -85,7 +81,6 @@ defmodule SimpleCipherTest do
     assert SimpleCipher.decode("abc", key) == "inq"
   end
 
-  @tag :pending
   test "if you know both the encoded and decoded text, you can figure out the key" do
     key = "supersecretkey"
 
@@ -95,26 +90,22 @@ defmodule SimpleCipherTest do
     assert SimpleCipher.decode(ciphertext, plaintext) == key
   end
 
-  @tag :pending
   test "can generate keys of given length" do
     assert String.length(SimpleCipher.generate_key(16)) == 16
     assert String.length(SimpleCipher.generate_key(128)) == 128
     assert String.length(SimpleCipher.generate_key(256)) == 256
   end
 
-  @tag :pending
   test "generated keys are random" do
     keys = Enum.map(0..100, fn _ -> SimpleCipher.generate_key(16) end)
     assert keys == Enum.uniq(keys)
   end
 
-  @tag :pending
   test "generated keys contain lowercase letters only" do
     keys = Enum.map(0..100, fn _ -> SimpleCipher.generate_key(16) end)
     assert Enum.all?(keys, &(&1 =~ ~r/^[a-z]*$/))
   end
 
-  @tag :pending
   test "generated keys can be used to encode and decode text" do
     Enum.each(0..100, fn _ ->
       key = SimpleCipher.generate_key(16)

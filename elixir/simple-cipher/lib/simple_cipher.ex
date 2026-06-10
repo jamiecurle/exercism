@@ -32,16 +32,19 @@ defmodule SimpleCipher do
   """
   def encode(plaintext, key) do
     to_pairs(plaintext, key)
-    |> IO.inspect(label: "pairs")
     |> Enum.map_join("", fn {<<plaintext::utf8>>, shift} ->
       if plaintext in ?a..?z do
-        <<plaintext + shift::utf8>>
+        (plaintext - 97) + shift
+        |> rem(26)
+        |> then(fn normalised_shift ->
+          <<97 + normalised_shift::utf8>>
+        end)
       else
         plaintext
       end
     end)
-    |> IO.inspect()
   end
+
 
   @doc """
   Given a `ciphertext` and `key`, decode each character of the `ciphertext` by
@@ -57,7 +60,11 @@ defmodule SimpleCipher do
     to_pairs(ciphertext, key)
     |> Enum.map_join("", fn {<<ciphertext::utf8>>, shift} ->
       if ciphertext in ?a..?z do
-        <<ciphertext - shift::utf8>>
+        (26 + (ciphertext - 97) - shift)
+        |> rem(26)
+        |> then(fn normalised_shift ->
+          <<97 + normalised_shift::utf8>>
+        end)
       else
         ciphertext
       end
@@ -68,19 +75,19 @@ defmodule SimpleCipher do
   Generate a random key of a given length. It should contain lowercase letters only.
   """
   def generate_key(length) do
+    for x <- 1..length do
+      Enum.random(?a..?z)
+      end
+      |> to_string()
   end
 
-  def to_pairs(plaintext, key) do
-    plaintext_g =
-      plaintext
-      |> String.graphemes()
-
+  def to_pairs(text, key) do
     key_cycle =
       key
       |> String.graphemes()
       |> Enum.map(fn <<c::utf8>> -> c - 97 end)
       |> Stream.cycle()
 
-    Enum.zip(plaintext_g, key_cycle)
+    Enum.zip(String.graphemes(text), key_cycle)
   end
 end
