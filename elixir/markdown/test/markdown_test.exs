@@ -1,6 +1,57 @@
 defmodule MarkdownTest do
   use ExUnit.Case
 
+  describe "matching block level" do
+    test "h1" do
+      input = "# hello"
+      output = {:h1, ["hello"]}
+      Markdown.find_block_level(input)
+    end
+
+    test "h2" do
+      input = "##     hello"
+      output = {:h2, ["hello"]}
+      Markdown.find_block_level(input)
+    end
+    test "h3" do
+      input = "###     hello"
+      output = {:h3, ["hello"]}
+      Markdown.find_block_level(input)
+    end
+    test "h4" do
+      input = "####   hello"
+      output = {:h4, ["hello"]}
+      Markdown.find_block_level(input)
+    end
+    test "h5" do
+      input = "#####  hello"
+      output = {:h5, ["hello"]}
+      Markdown.find_block_level(input)
+    end
+    test "h6" do
+      input = "###### hello"
+      output = {:h6, ["hello"]}
+      Markdown.find_block_level(input)
+    end
+    test "matches paragraph" do
+      input = "hello"
+      output = {:p, ["hello"]}
+      Markdown.find_block_level(input)
+    end
+    test "matches unordered list" do
+      input = "* hello"
+      output = {:li, ["hello"]}
+      Markdown.find_block_level(input)
+    end
+  end
+
+  test "tokenise" do
+    input = "# Hello\n* Item 1\n* Item 2"
+    expected = [{:h1, ["Hello"]}, {:li, ["Item 1"]}, {:li, ["Item 2"]}]
+    assert Markdown.tokenise(input) == expected
+  end
+
+
   # @tag :pending
   test "parses normal text as a paragraph" do
     input = "This will be a paragraph"

@@ -10,6 +10,23 @@ defmodule Markdown do
       iex> Markdown.parse("# Header!\\n* __Bold Item__\\n* _Italic Item_")
       "<h1>Header!</h1><ul><li><strong>Bold Item</strong></li><li><em>Italic Item</em></li></ul>"
   """
+  @spec tokenise(String.t()) :: list()
+  def tokenise(markdown) do
+    markdown
+    |> String.split("\n")
+    |> Enum.map(&find_block_level/1)
+  end
+
+  def find_block_level("# " <> content), do: {:h1, [content]}
+  def find_block_level("## " <> content), do: {:h2, [content]}
+  def find_block_level("### " <> content), do: {:h3, [content]}
+  def find_block_level("#### " <> content), do: {:h4, [content]}
+  def find_block_level("##### " <> content), do: {:h5, [content]}
+  def find_block_level("###### " <> content), do: {:h6, [content]}
+  def find_block_level("* " <> content), do: {:li, [content]}
+  def find_block_level(content), do: {:p, [content]}
+
+
   @spec parse(String.t()) :: String.t()
   def parse(m) do
     patch(Enum.join(Enum.map(String.split(m, "\n"), fn t -> process(t) end)))
