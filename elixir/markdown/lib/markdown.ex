@@ -13,14 +13,31 @@ defmodule Markdown do
   @spec tokenise(String.t()) :: list()
   def tokenise(markdown) do
     markdown
-    |> String.split("\n")
-    |> Enum.map(&find_block_level/1)
+    |> to_lines()
+    |> block_elements()
+    |> group_blocks()
+    |> inline_elements()
+  end
+
+  def to_lines(markdown), do: String.split(markdown, "\n")
+
+  def block_elements(markdown_list) do
+    Enum.map(markdown_list, &match_block_element/1)
+  end
+
+  def group_blocks(ungrouped) do
+    ungrouped
     |> Enum.chunk_by(fn {tag, _} -> tag end)
     |> Enum.map(fn [{tag, _} | _] = chunk ->
       {tag, Enum.flat_map(chunk, fn {_, content} -> content end)}
     end)
+  end
 
-    # |> group_elements()
+  #
+  #
+  # you where here
+  def inline_elements(grouped) do
+    IO.inspect(grouped)
   end
 
   # @doc """
@@ -43,15 +60,15 @@ defmodule Markdown do
   Finds block level html elements at the start of a newline and converts into
   a data structure suitable for working with
   """
-  @spec find_block_level(String.t()) :: {atom(), [String.t()]}
-  def find_block_level("# " <> content), do: {:h1, [content]}
-  def find_block_level("## " <> content), do: {:h2, [content]}
-  def find_block_level("### " <> content), do: {:h3, [content]}
-  def find_block_level("#### " <> content), do: {:h4, [content]}
-  def find_block_level("##### " <> content), do: {:h5, [content]}
-  def find_block_level("###### " <> content), do: {:h6, [content]}
-  def find_block_level("* " <> content), do: {:li, [content]}
-  def find_block_level(content), do: {:p, [content]}
+  @spec match_block_element(String.t()) :: {atom(), [String.t()]}
+  def match_block_element("# " <> content), do: {:h1, [content]}
+  def match_block_element("## " <> content), do: {:h2, [content]}
+  def match_block_element("### " <> content), do: {:h3, [content]}
+  def match_block_element("#### " <> content), do: {:h4, [content]}
+  def match_block_element("##### " <> content), do: {:h5, [content]}
+  def match_block_element("###### " <> content), do: {:h6, [content]}
+  def match_block_element("* " <> content), do: {:li, [content]}
+  def match_block_element(content), do: {:p, [content]}
 
   @spec parse(String.t()) :: String.t()
   def parse(m) do
