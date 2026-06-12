@@ -15,8 +15,35 @@ defmodule Markdown do
     markdown
     |> String.split("\n")
     |> Enum.map(&find_block_level/1)
+    |> Enum.chunk_by(fn {tag, _} -> tag end)
+    |> Enum.map(fn [{tag, _} | _] = chunk ->
+      {tag, Enum.flat_map(chunk, fn {_, content} -> content end)}
+    end)
+
+    # |> group_elements()
   end
 
+  # @doc """
+  # Groups similar elements together
+  # """
+  # def group_elements(elem), do: group_elements(elem, [])
+
+  # def group_elements({tag, _contents}, [{previous_tag, contents} | rest] = acc) do
+  #   IO.inspect({tag, previous_tag})
+  #   {tag, acc}
+
+  #   if tag == previous_tag do
+  #     IO.inspect(previous_tag)
+  #   else
+  #     {[{tag, contents} | acc]}
+  #   end
+  # end
+
+  @doc """
+  Finds block level html elements at the start of a newline and converts into
+  a data structure suitable for working with
+  """
+  @spec find_block_level(String.t()) :: {atom(), [String.t()]}
   def find_block_level("# " <> content), do: {:h1, [content]}
   def find_block_level("## " <> content), do: {:h2, [content]}
   def find_block_level("### " <> content), do: {:h3, [content]}
@@ -25,7 +52,6 @@ defmodule Markdown do
   def find_block_level("###### " <> content), do: {:h6, [content]}
   def find_block_level("* " <> content), do: {:li, [content]}
   def find_block_level(content), do: {:p, [content]}
-
 
   @spec parse(String.t()) :: String.t()
   def parse(m) do

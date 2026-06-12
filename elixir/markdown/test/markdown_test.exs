@@ -5,52 +5,72 @@ defmodule MarkdownTest do
     test "h1" do
       input = "# hello"
       output = {:h1, ["hello"]}
-      Markdown.find_block_level(input)
+      assert Markdown.find_block_level(input) == output
     end
 
     test "h2" do
-      input = "##     hello"
+      input = "## hello"
       output = {:h2, ["hello"]}
-      Markdown.find_block_level(input)
+      assert Markdown.find_block_level(input) == output
     end
+
     test "h3" do
-      input = "###     hello"
+      input = "### hello"
       output = {:h3, ["hello"]}
-      Markdown.find_block_level(input)
+      assert Markdown.find_block_level(input) == output
     end
+
     test "h4" do
-      input = "####   hello"
+      input = "#### hello"
       output = {:h4, ["hello"]}
-      Markdown.find_block_level(input)
+      assert Markdown.find_block_level(input) == output
     end
+
     test "h5" do
-      input = "#####  hello"
+      input = "##### hello"
       output = {:h5, ["hello"]}
-      Markdown.find_block_level(input)
+      assert Markdown.find_block_level(input) == output
     end
+
     test "h6" do
       input = "###### hello"
       output = {:h6, ["hello"]}
-      Markdown.find_block_level(input)
+      assert Markdown.find_block_level(input) == output
     end
+
     test "matches paragraph" do
       input = "hello"
       output = {:p, ["hello"]}
-      Markdown.find_block_level(input)
+      assert Markdown.find_block_level(input) == output
     end
+
     test "matches unordered list" do
       input = "* hello"
       output = {:li, ["hello"]}
-      Markdown.find_block_level(input)
+      assert Markdown.find_block_level(input) == output
     end
   end
 
-  test "tokenise" do
-    input = "# Hello\n* Item 1\n* Item 2"
-    expected = [{:h1, ["Hello"]}, {:li, ["Item 1"]}, {:li, ["Item 2"]}]
-    assert Markdown.tokenise(input) == expected
-  end
+  describe "tokenise test" do
+    test "tokenise heading and list" do
+      input = "# Hello\n* Item 1\n* Item 2"
+      expected = [{:h1, ["Hello"]}, {:li, ["Item 1"]}, {:li, ["Item 2"]}]
+      assert Markdown.tokenise(input) == expected
+    end
 
+    test "tokenise heading, list paragraph" do
+      input = "# Hello\n* Item 1\n* Item 2 \n This is a paragraph."
+
+      expected = [
+        {:h1, ["Hello"]},
+        {:li, ["Item 1"]},
+        {:li, ["Item 2 "]},
+        {:p, [" This is a paragraph."]}
+      ]
+
+      assert Markdown.tokenise(input) == expected
+    end
+  end
 
   # @tag :pending
   test "parses normal text as a paragraph" do
