@@ -37,7 +37,34 @@ defmodule Markdown do
   #
   # you where here
   def inline_elements(grouped) do
-    IO.inspect(grouped)
+    grouped
+    |> Enum.map(fn {_tag, contents} ->
+      do_parse_inline(contents)
+    end)
+  end
+
+  def do_parse_inline(contents) do
+    contents
+    |> bold()
+    |> italic()
+
+    # IO.inspect(contents)
+  end
+
+  def bold(content) do
+    Regex.split(~r/__(.+?)__/, content, include_captures: true)
+    |> Enum.map(fn
+      "__" <> inner -> {:b, String.trim_trailing(inner, "__")}
+      part -> part
+    end)
+  end
+
+  def italic(content) do
+    Regex.split(~r/_(.+?)_/, content, include_captures: true)
+    |> Enum.map(fn
+      "__" <> inner -> {:i, String.trim_trailing(inner, "_")}
+      part -> part
+    end)
   end
 
   # @doc """
