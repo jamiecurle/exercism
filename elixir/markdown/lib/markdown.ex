@@ -21,10 +21,12 @@ defmodule Markdown do
 
   def to_lines(markdown), do: String.split(markdown, "\n")
 
+  @spec block_elements(list()) :: list()
   def block_elements(markdown_list) do
     Enum.map(markdown_list, &match_block_element/1)
   end
 
+  @spec group_blocks(list()) :: list()
   def group_blocks(ungrouped) do
     ungrouped
     |> Enum.chunk_by(fn {tag, _} -> tag end)
@@ -33,39 +35,98 @@ defmodule Markdown do
     end)
   end
 
-  #
-  #
-  # you where here
+  # this comes in as a list
+  @spec inline_elements(list()) :: list()
   def inline_elements(grouped) do
-    grouped
-    |> Enum.map(fn {_tag, contents} ->
-      do_parse_inline(contents)
-    end)
+    IO.inspect(grouped, label: "grouped")
   end
 
-  def do_parse_inline(contents) do
-    contents
-    |> bold()
-    |> italic()
+  # content comes in as a list and leaves as a list
+  # but in order to parse, we need to split into another list
+  @spec italic(list(), list()) :: list()
+  def italic(content) when is_list(content), do: italic(content, [])
+  def italic([], result), do: result
 
-    # IO.inspect(contents)
+  def italic([head | tail], result) do
+    IO.inspect(head, label: "head")
+    IO.inspect(tail, label: "tail")
+    IO.inspect(result, label: "result")
+
+    parsed =
+      case head do
+        {tag, content} -> {tag, match_italic(content)}
+        content -> match_italic(content)
+      end
+
+    italic(tail, result ++ [parsed])
   end
 
-  def bold(content) do
-    Regex.split(~r/__(.+?)__/, content, include_captures: true)
-    |> Enum.map(fn
-      "__" <> inner -> {:b, String.trim_trailing(inner, "__")}
-      part -> part
-    end)
-  end
+  # you were here
 
-  def italic(content) do
+  def match_italic(content) do
     Regex.split(~r/_(.+?)_/, content, include_captures: true)
     |> Enum.map(fn
-      "__" <> inner -> {:i, String.trim_trailing(inner, "_")}
+      "__" <> inner -> {:i, [String.trim_trailing(inner, "_")]}
       part -> part
     end)
   end
+
+  @spec bold(list(), list()) :: list()
+  # this is just syntactic sugar so it can be called without the empty list
+  def bold(content) when is_list(content), do: bold(content, [])
+
+  # the base case
+  def bold([], result), do: result
+
+  def bold([head | tail], result) do
+    parsed =
+      case head do
+        {tag, content} -> {tag, match_bold(content)}
+        content -> match_bold(content)
+      end
+
+    bold(tail, result ++ [parsed])
+  end
+
+  # the one that does the lifting
+  def match_bold(content) do
+    Regex.split(~r/__(.+?)__/, content, include_captures: true)
+    |> Enum.map(fn
+      "__" <> inner -> {:b, [String.trim_trailing(inner, "__")]}
+      part -> part
+    end)
+  end
+
+  # def inline_elements(grouped) do
+  #   grouped
+  #   |> Enum.map(fn {_tag, contents} ->
+  #     do_parse_inline(contents)
+  #   end)
+  # end
+
+  # def do_parse_inline(contents) do
+  #   contents
+  #   |> bold()
+  #   |> italic()
+
+  #   # IO.inspect(contents)
+  # end
+
+  # def bold(content) do
+  #   Regex.split(~r/__(.+?)__/, content, include_captures: true)
+  #   |> Enum.map(fn
+  #     "__" <> inner -> {:b, String.trim_trailing(inner, "__")}
+  #     part -> part
+  #   end)
+  # end
+
+  # def italic(content) do
+  #   Regex.split(~r/_(.+?)_/, content, include_captures: true)
+  #   |> Enum.map(fn
+  #     "__" <> inner -> {:i, String.trim_trailing(inner, "_")}
+  #     part -> part
+  #   end)
+  # end
 
   # @doc """
   # Groups similar elements together

@@ -117,22 +117,23 @@ defmodule MarkdownTest do
 
   describe "bold" do
     test "happy path" do
-      input = "but __Item 2__ _really is_"
-      expected = ["but ", {:b, "Item 2"}, " _really is_"]
+      input = [{:time, "but"}, " __Item 2__ _really is_"]
+      expected = [{:time, ["but"]}, [" ", {:b, ["Item 2"]}, " _really is_"]]
       assert Markdown.bold(input) == expected
     end
 
     test "bold doesn't parse on single underscores" do
-      input = "but __Item 2__ _really is_"
-      expected = ["but ", {:b, "Item 2"}, " _really is_"]
+      input = [{:time, "but"}, " __Item 2__ _really is_"]
+      expected = [{:time, ["but"]}, [" ", {:b, ["Item 2"]}, " _really is_"]]
       assert Markdown.bold(input) == expected
     end
   end
 
   describe "italic" do
     test "happy path" do
-      input = "but __Item 2__ _really is_"
-      expected = ["but ", "__Item 2__", {:i, "really is"}]
+      input = [{:time, "but"}, " __Item 2__ _really is_"]
+      expected = [{:time, ["but"]}, ["__Item 2__", {:i, "really is"}]]
+
       assert Markdown.italic(input) == expected
     end
   end
