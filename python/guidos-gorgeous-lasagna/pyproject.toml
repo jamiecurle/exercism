@@ -1,0 +1,11 @@
+[project]
+name = "guidos-gorgeous-lasagna"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pytest>=9.2.0",
+    "pytest-cache>=1.0",
+    "pytest-subtests>=0.15.0",
+]
