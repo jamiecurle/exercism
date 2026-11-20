@@ -21,12 +21,10 @@ defmodule DominoesTest do
     assert Dominoes.chain?([{1, 2}, {1, 3}, {2, 3}]) == true
   end
 
-  @tag :pending
   test "can't be chained" do
     assert Dominoes.chain?([{1, 2}, {4, 1}, {2, 3}]) == false
   end
 
-  @tag :pending
   test "disconnected - double loop" do
     assert Dominoes.chain?([{1, 2}, {2, 1}, {3, 4}, {4, 3}]) == false
   end
